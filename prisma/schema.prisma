@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+model Member {
+  id        Int      @id @default(autoincrement())
+  phone     String   @unique
+  fullName  String?
+  partyId   Int?
+  party     Party?   @relation(fields: [partyId], references: [id])
+  district  String?
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+}
+
+model OTP {
+  id        Int      @id @default(autoincrement())
+  phone     String
+  codeHash  String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([phone])
+}
+
+model Party {
+  id           Int      @id @default(autoincrement())
+  name         String
+  slug         String   @unique
+  logo         String?
+  primaryColor String?  @default("#0f172a")
+  members      Member[]
+  announcements Announcement[]
+  discussions   Discussion[]
+  votes         VoteSession[]
+  createdAt    DateTime @default(now())
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String?
+  partyId   Int
+  party     Party    @relation(fields: [partyId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Discussion {
+  id        Int      @id @default(autoincrement())
+  title     String
+  partyId   Int
+  party     Party    @relation(fields: [partyId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model VoteSession {
+  id        Int      @id @default(autoincrement())
+  title     String
+  partyId   Int
+  party     Party    @relation(fields: [partyId], references: [id])
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime @default(now())
+}
